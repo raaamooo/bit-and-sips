@@ -9,7 +9,7 @@ const OrderManager = (() => {
     let selectedTip = 0; // percentage
     let tableNumber = 'Walk-in';
 
-    const API_BASE_URL = 'http://localhost:3000'; // Change to Render URL in production
+    const API_BASE_URL = 'https://amber-bean-api-production.up.railway.app'; // Change to Render URL in production
 
     // ─── Table URL System ────────────────────────────────────
     function initTable() {
