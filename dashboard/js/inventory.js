@@ -13,41 +13,34 @@ const InventoryManager = (() => {
     // ─── Initialization ──────────────────────────────────────────
     function init() {
         DashboardShared.initTheme();
-        bindControls();
         loadInventory();
+        bindControls();
+        render();
     }
 
-    // ─── Load from API or seed defaults ──────────────────────────
-    async function loadInventory() {
+    // ─── Load from localStorage or seed defaults ─────────────────
+    function loadInventory() {
         try {
-            const res = await fetch(DashboardShared.API_BASE_URL + '/api/inventory');
-            if (res.ok) {
-                const data = await res.json();
-                const saved = data.inventory;
-                if (saved && Object.keys(saved).length > 0) {
-                    inventory = saved;
-                    // Ensure any new default ingredients not yet in storage are added
-                    for (const [key, items] of Object.entries(INGREDIENT_TO_ITEMS)) {
-                        if (!inventory[key]) {
-                            inventory[key] = {
-                                name: INGREDIENT_DISPLAY_NAMES[key] || key,
-                                available: true,
-                                notes: '',
-                                affectedItems: items
-                            };
-                        }
+            const saved = JSON.parse(localStorage.getItem(INVENTORY_KEY));
+            if (saved && Object.keys(saved).length > 0) {
+                inventory = saved;
+                // Ensure any new default ingredients not yet in storage are added
+                for (const [key, items] of Object.entries(INGREDIENT_TO_ITEMS)) {
+                    if (!inventory[key]) {
+                        inventory[key] = {
+                            name: INGREDIENT_DISPLAY_NAMES[key] || key,
+                            available: true,
+                            notes: '',
+                            affectedItems: items
+                        };
                     }
-                } else {
-                    seedDefaults();
                 }
             } else {
                 seedDefaults();
             }
         } catch (e) {
-            console.error('Failed to load inventory from API:', e);
             seedDefaults();
         }
-        render();
     }
 
     function seedDefaults() {
@@ -65,19 +58,18 @@ const InventoryManager = (() => {
 
     // ─── Persistence ─────────────────────────────────────────────
     function save() {
+        localStorage.setItem(INVENTORY_KEY, JSON.stringify(inventory));
+        recalcUnavailable();
+    }
+
+    function recalcUnavailable() {
         const unavailableSet = new Set();
         for (const [, ing] of Object.entries(inventory)) {
             if (!ing.available) {
                 ing.affectedItems.forEach(id => unavailableSet.add(id));
             }
         }
-        const unavailableItems = [...unavailableSet];
-
-        fetch(DashboardShared.API_BASE_URL + '/api/inventory', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ inventory, unavailableItems })
-        }).catch(e => console.error("Inventory sync error:", e));
+        localStorage.setItem(UNAVAILABLE_KEY, JSON.stringify([...unavailableSet]));
     }
 
     // ─── Controls ────────────────────────────────────────────────

@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Attach send-to-waiter handlers
         grid.querySelectorAll('[data-action="send-waiter"]').forEach(btn => {
-            btn.addEventListener('click', () => sendToWaiter(btn.dataset.orderId));
+            btn.addEventListener('click', () => sendToWaiter(parseInt(btn.dataset.orderId)));
         });
     }
 

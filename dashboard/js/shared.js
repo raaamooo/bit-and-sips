@@ -6,34 +6,31 @@ const DashboardShared = (() => {
     const ORDERS_KEY = 'bitsAndSipsOrders';
     const COUNTER_KEY = 'bitsAndSipsOrderCounter';
     const THEME_KEY = 'dashboardTheme';
-    const API_BASE_URL = 'https://bits-and-sipsbackend-production.up.railway.app'; // Railway Production URL
 
-    let cachedOrders = [];
-
-    // ─── API Read / Write ───────────────────────────
+    // ─── localStorage Read / Write ───────────────────────────
     function getOrders() {
-        return cachedOrders;
+        try {
+            return JSON.parse(localStorage.getItem(ORDERS_KEY)) || [];
+        } catch (e) {
+            return [];
+        }
     }
 
     function saveOrders(orders) {
-        cachedOrders = orders;
-        fetch(API_BASE_URL + '/api/orders/sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orders)
-        }).catch(e => console.error("Sync error:", e));
+        localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
     }
 
     function updateOrder(orderId, updates) {
-        const idx = cachedOrders.findIndex(o => o.id === orderId);
+        const orders = getOrders();
+        const idx = orders.findIndex(o => o.id === orderId);
         if (idx === -1) return null;
-        Object.assign(cachedOrders[idx], updates);
-        saveOrders(cachedOrders);
-        return cachedOrders[idx];
+        Object.assign(orders[idx], updates);
+        saveOrders(orders);
+        return orders[idx];
     }
 
     function getOrderById(orderId) {
-        return cachedOrders.find(o => o.id === orderId) || null;
+        return getOrders().find(o => o.id === orderId) || null;
     }
 
     // ─── Theme Switcher ─────────────────────────────────────
@@ -60,21 +57,8 @@ const DashboardShared = (() => {
 
     // ─── Polling ─────────────────────────────────────────────
     function startPolling(callback, intervalMs = 3000) {
-        const poll = async () => {
-            try {
-                const res = await fetch(API_BASE_URL + '/api/orders');
-                if (res.ok) {
-                    const data = await res.json();
-                    // Handle both array response and { success, orders } object response
-                    cachedOrders = Array.isArray(data) ? data : (data.orders || []);
-                    callback();
-                }
-            } catch (e) {
-                console.error("Polling error:", e);
-            }
-        };
-        poll(); // initial call
-        return setInterval(poll, intervalMs);
+        callback(); // initial call
+        return setInterval(callback, intervalMs);
     }
 
     // ─── Order Counter Badge ─────────────────────────────────
@@ -169,7 +153,6 @@ const DashboardShared = (() => {
     return {
         ORDERS_KEY,
         COUNTER_KEY,
-        API_BASE_URL,
         getOrders,
         saveOrders,
         updateOrder,

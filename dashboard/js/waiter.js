@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Attach delivered handlers
         grid.querySelectorAll('[data-action="mark-delivered"]').forEach(btn => {
-            btn.addEventListener('click', () => markDelivered(btn.dataset.orderId));
+            btn.addEventListener('click', () => markDelivered(parseInt(btn.dataset.orderId)));
         });
     }
 

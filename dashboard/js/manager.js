@@ -75,14 +75,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Attach row click handlers (open detail panel)
         ordersListEl.querySelectorAll('.mgr-row-clickable').forEach(el => {
-            el.addEventListener('click', () => openPanel(el.dataset.orderId));
+            el.addEventListener('click', () => openPanel(parseInt(el.dataset.orderId)));
         });
 
         // Attach status override handlers
         ordersListEl.querySelectorAll('.mgr-status-select').forEach(sel => {
             sel.addEventListener('change', (e) => {
                 e.stopPropagation();
-                overrideStatus(sel.dataset.orderId, sel.value);
+                overrideStatus(parseInt(sel.dataset.orderId), sel.value);
             });
         });
 

@@ -48,10 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Attach action handlers
         grid.querySelectorAll('[data-action="send-kitchen"]').forEach(btn => {
-            btn.addEventListener('click', () => sendToKitchen(btn.dataset.orderId));
+            btn.addEventListener('click', () => sendToKitchen(parseInt(btn.dataset.orderId)));
         });
         grid.querySelectorAll('[data-action="print-check"]').forEach(btn => {
-            btn.addEventListener('click', () => printCheck(btn.dataset.orderId));
+            btn.addEventListener('click', () => printCheck(parseInt(btn.dataset.orderId)));
         });
     }
 

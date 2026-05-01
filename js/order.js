@@ -9,7 +9,8 @@ const OrderManager = (() => {
     let selectedTip = 0; // percentage
     let tableNumber = 'Walk-in';
 
-    const API_BASE_URL = 'https://bits-and-sipsbackend-production.up.railway.app'; // Railway Production URL
+    const ORDERS_KEY = 'bitsAndSipsOrders';
+    const COUNTER_KEY = 'bitsAndSipsOrderCounter';
 
     // ─── Table URL System ────────────────────────────────────
     function initTable() {
@@ -187,7 +188,14 @@ const OrderManager = (() => {
     }
 
     // ─── Place Order ─────────────────────────────────────────
-    async function placeOrder() {
+    function getNextOrderId() {
+        let counter = parseInt(localStorage.getItem(COUNTER_KEY)) || 0;
+        counter++;
+        localStorage.setItem(COUNTER_KEY, counter);
+        return counter;
+    }
+
+    function placeOrder() {
         const nameInput = document.getElementById('customer-name');
         const notesInput = document.getElementById('order-notes');
         const confirmationEl = document.getElementById('order-confirmation');
@@ -212,9 +220,11 @@ const OrderManager = (() => {
         // Clear error
         if (errorEl) errorEl.classList.add('hidden');
 
+        const orderId = getNextOrderId();
         const now = new Date().toISOString().slice(0, 19);
 
         const order = {
+            id: orderId,
             tableNumber: tableNumber,
             customerName: name,
             items: cart.map(i => ({ id: i.id, name: i.name, price: i.price })),
@@ -238,31 +248,27 @@ const OrderManager = (() => {
             }
         };
 
+        // Save to localStorage
+        let orders = [];
         try {
-            const res = await fetch(API_BASE_URL + '/api/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(order)
-            });
-            const savedOrder = await res.json();
-            const orderId = savedOrder.id;
-
-            // Show confirmation
-            if (confirmationEl) {
-                confirmationEl.innerHTML = `
-                    <div class="confirmation-content">
-                        <i class="fas fa-check-circle confirmation-icon"></i>
-                        <h3>Order #${orderId} placed successfully!</h3>
-                        <p>Your waiter will be with you shortly.</p>
-                    </div>
-                `;
-                confirmationEl.classList.remove('hidden');
-                confirmationEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            orders = JSON.parse(localStorage.getItem(ORDERS_KEY)) || [];
         } catch (e) {
-            console.error("Error saving order:", e);
-            showError('Failed to place order. Please check your connection.');
-            return;
+            orders = [];
+        }
+        orders.push(order);
+        localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+
+        // Show confirmation
+        if (confirmationEl) {
+            confirmationEl.innerHTML = `
+                <div class="confirmation-content">
+                    <i class="fas fa-check-circle confirmation-icon"></i>
+                    <h3>Order #${orderId} placed successfully!</h3>
+                    <p>Your waiter will be with you shortly.</p>
+                </div>
+            `;
+            confirmationEl.classList.remove('hidden');
+            confirmationEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         // Reset form
@@ -323,17 +329,13 @@ const OrderManager = (() => {
         setInterval(applyInventorySync, 60000);
     }
 
-    // ─── Inventory Sync (reads unavailable items from API) ──
-    async function applyInventorySync() {
+    // ─── Inventory Sync (reads unavailable items from localStorage) ──
+    function applyInventorySync() {
         let unavailable = [];
         try {
-            const res = await fetch(API_BASE_URL + '/api/inventory');
-            if (res.ok) {
-                const data = await res.json();
-                unavailable = data.unavailableItems || [];
-            }
+            unavailable = JSON.parse(localStorage.getItem('bitsAndSipsUnavailableItems')) || [];
         } catch (e) {
-            console.error('Inventory sync error:', e);
+            unavailable = [];
         }
 
         const allCategories = ['food', 'drinks', 'desserts'];
