@@ -1,0 +1,67 @@
+{
+  "orders": [
+    {
+      "tableNumber": "Walk-in",
+      "customerName": "John",
+      "items": [
+        {
+          "id": "f1",
+          "name": "Koshari",
+          "price": 55
+        }
+      ],
+      "notes": "",
+      "paymentMethod": "cash",
+      "tip": 0,
+      "subtotal": 55,
+      "tipAmount": 0,
+      "grandTotal": 55,
+      "status": "pending",
+      "timestamps": {
+        "placed": "2026-05-01T14:39:52",
+        "sentToKitchen": null,
+        "sentToWaiter": null,
+        "completed": null
+      },
+      "worker": {
+        "cashierSeen": false,
+        "kitchenSeen": false,
+        "waiterSeen": false
+      },
+      "id": 1
+    },
+    {
+      "tableNumber": "Walk-in",
+      "customerName": "oma",
+      "items": [
+        {
+          "id": "ds6",
+          "name": "Roz bel Laban",
+          "price": 45
+        }
+      ],
+      "notes": "",
+      "paymentMethod": "cash",
+      "tip": 10,
+      "subtotal": 45,
+      "tipAmount": 4.5,
+      "grandTotal": 49.5,
+      "status": "pending",
+      "timestamps": {
+        "placed": "2026-05-01T14:50:31",
+        "sentToKitchen": null,
+        "sentToWaiter": null,
+        "completed": null
+      },
+      "worker": {
+        "cashierSeen": false,
+        "kitchenSeen": false,
+        "waiterSeen": false
+      },
+      "id": 2
+    }
+  ],
+  "counter": 2,
+  "inventory": {},
+  "unavailableItems": []
+}
